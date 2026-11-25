@@ -67,6 +67,9 @@ SetEnvIf Request_URI ^.*$ PROFILE_PROV=https://cross-domain-interoperability-fra
 SetEnvIf Request_URI ^.*$ PROFILE_CS=https://cross-domain-interoperability-framework.github.io/profile-conceptscheme
 SetEnvIf Request_URI ^.*$ PROFILE_CL=https://cross-domain-interoperability-framework.github.io/profile-codelist
 SetEnvIf Request_URI ^.*$ PROFILE_NIAID=https://cross-domain-interoperability-framework.github.io/profile-niaid
+# profile-access-draft is the published repo name for the draft CDIF Access
+# profile; Pages serves its main branch, as for the released profiles above.
+SetEnvIf Request_URI ^.*$ PROFILE_ACCESS=https://cross-domain-interoperability-framework.github.io/profile-access-draft
 SetEnvIf Request_URI ^.*$ DOC_CD=https://cross-domain-interoperability-framework.github.io/doc-corediscovery
 SetEnvIf Request_URI ^.*$ DOC_DDD=https://cross-domain-interoperability-framework.github.io/doc-discoverydatadescription
 SetEnvIf Request_URI ^.*$ DOC_DDDS=https://cross-domain-interoperability-framework.github.io/doc-discoverydatadescriptionstructure
@@ -156,6 +159,7 @@ SetEnvIf Request_URI ^.*$ MBB_XAS_1_0_TREE=https://github.com/Cross-Domain-Inter
 #   conceptscheme/1.1   → profile-conceptscheme
 #   codelist/1.1        → profile-codelist
 #   niaid/1.0           → profile-niaid (domain profile: NIAID Data Discovery Portal records)
+#   access/1.0          → profile-access-draft (draft: ODRL access and usage policy)
 #   dde/1.0/{Profile}   → ddeBuildingBlocks register (DDE domain profiles, 11 of them)
 #   xasCore/1.2         → mBB xasProperties/xasCore     (XAS mandatory tier)
 #   xasOptional/1.2     → mBB xasProperties/xasOptional (XAS optional tier)
@@ -248,6 +252,11 @@ RewriteRule ^niaid/1\.0/schema/?$   %{ENV:PROFILE_NIAID}/cdifNIAIDStructuredSche
 RewriteRule ^niaid/1\.0/resolved/?$ %{ENV:PROFILE_NIAID}/cdifNIAIDStructuredSchema.json [R=303,L]
 RewriteRule ^niaid/1\.0/shacl/?$    %{ENV:PROFILE_NIAID}/niaidRules.shacl [R=303,L]
 RewriteRule ^niaid/1\.0/guide/?$    %{ENV:PROFILE_NIAID}/CDIFNIAIDImplementationGuide.html [R=303,L]
+# --- access/1.0 sub-paths -> profile-access-draft ---
+RewriteRule ^access/1\.0/schema/?$   %{ENV:PROFILE_ACCESS}/cdifAccessStructuredSchema.json [R=303,L]
+RewriteRule ^access/1\.0/resolved/?$ %{ENV:PROFILE_ACCESS}/cdifAccessStructuredSchema.json [R=303,L]
+RewriteRule ^access/1\.0/shacl/?$    %{ENV:PROFILE_ACCESS}/accessRules.shacl [R=303,L]
+RewriteRule ^access/1\.0/guide/?$    %{ENV:PROFILE_ACCESS}/CDIFAccessImplementationGuide.html [R=303,L]
 
 # --- dde/1.0/{Profile} sub-paths → ddeBuildingBlocks register ---
 # The profile name is matched with ([^/]+) rather than listed, exactly as the
@@ -674,6 +683,13 @@ RewriteRule ^niaid/1\.0/?$ %{ENV:PROFILE_NIAID}/cdifNIAIDStructuredSchema.json [
 RewriteCond %{HTTP_ACCEPT} text/turtle
 RewriteRule ^niaid/1\.0/?$ %{ENV:PROFILE_NIAID}/niaidRules.shacl [R=303,L]
 RewriteRule ^niaid/1\.0/?$ %{ENV:PROFILE_NIAID}/CDIFNIAIDImplementationGuide.html [R=303,L]
+# --- access/1.0 -> profile-access-draft ---
+RewriteCond %{HTTP_ACCEPT} application/schema\+json [OR]
+RewriteCond %{HTTP_ACCEPT} application/json
+RewriteRule ^access/1\.0/?$ %{ENV:PROFILE_ACCESS}/cdifAccessStructuredSchema.json [R=303,L]
+RewriteCond %{HTTP_ACCEPT} text/turtle
+RewriteRule ^access/1\.0/?$ %{ENV:PROFILE_ACCESS}/accessRules.shacl [R=303,L]
+RewriteRule ^access/1\.0/?$ %{ENV:PROFILE_ACCESS}/CDIFAccessImplementationGuide.html [R=303,L]
 
 # --- dde/1.0/{Profile} → ddeBuildingBlocks register ---
 # No Implementation Guide exists for a DDE profile, so the browser default is the
@@ -1126,6 +1142,10 @@ RewriteRule ^codelist/(schema|resolved|shacl|guide)/?$  /cdif/codelist/1.1/$1 [R
 
 RewriteRule ^niaid/?$                                /cdif/niaid/1.0/ [R=302,L]
 RewriteRule ^niaid/(schema|resolved|shacl|guide)/?$  /cdif/niaid/1.0/$1 [R=302,L]
+# access/profile1/ is the cdifa1 ODRL action vocabulary namespace, a different
+# identifier that is not minted; the anchored patterns below cannot match it.
+RewriteRule ^access/?$                                /cdif/access/1.0/ [R=302,L]
+RewriteRule ^access/(schema|resolved|shacl|guide)/?$  /cdif/access/1.0/$1 [R=302,L]
 
 # XAS tiers are at 1.2 and live on mBB main, not in a release repo -- so they
 # have a `context` sub-path and no `guide`, the reverse of the profiles above.
